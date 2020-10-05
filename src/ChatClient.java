@@ -22,14 +22,22 @@ public class ChatClient {
         socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
-        // start a thread to listen for server messages
-        ClientServerHandler listener = new ClientServerHandler(socketIn);
-        Thread t = new Thread(listener);
-        t.start();
+        // Submit name to server
+        while (!socketIn.readLine().trim().equals("SUBMITNAME"));
 
         System.out.print("Chat sessions has started - enter a user name: ");
         String name = userInput.nextLine().trim();
         out.println(name); //out.flush();
+        while (!socketIn.readLine().startsWith("WELCOME")) {
+            System.out.print("Name already taken. Enter a different user name: ");
+            name = userInput.nextLine().trim();
+            out.println(name); //out.flush();
+        }
+
+        // start a thread to listen for server messages
+        ClientServerHandler listener = new ClientServerHandler(socketIn);
+        Thread t = new Thread(listener);
+        t.start();
 
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {

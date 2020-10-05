@@ -35,11 +35,11 @@ public class ChatServer {
                     String name = socket.getInetAddress().getHostName();
 
                     ClientConnectionData client = new ClientConnectionData(socket, in, out, name);
-                    synchronized (clientList) {
-                        clientList.add(client);
-                    }
+                    // synchronized (clientList) {
+                    //     clientList.add(client);
+                    // }
                     
-                    System.out.println("added client " + name);
+                    // System.out.println("added client " + name);
 
                     //handle client business in another thread
                     pool.execute(new ServerClientHandler(client, clientList));

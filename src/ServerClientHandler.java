@@ -38,13 +38,37 @@ public class ServerClientHandler implements Runnable {
         
     }
 
+    private boolean nameInClientList(final String name){
+        boolean containsName = false;
+        for (ClientConnectionData data : clientList) {
+            if (data.getUserName().equals(name)) {
+                containsName = true;
+                break;
+            }
+        }
+        return containsName;
+    }
+
     @Override
     public void run() {
         try {
             BufferedReader in = client.getInput();
+            PrintWriter out = client.getOut();
+
             //get userName, first message from user
-            String userName = in.readLine().trim();
-            client.setUserName(userName);
+            String userName;
+            do {
+                out.println("SUBMITNAME");
+                userName = in.readLine().trim();
+            } while (nameInClientList(userName));
+            System.out.println(userName);
+
+            synchronized (clientList) {
+                client.setUserName(userName);
+                clientList.add(client);
+            }
+            
+            System.out.println("added client " + client.getName());
             //notify all that client has joined
             broadcast(String.format("WELCOME %s", client.getUserName()));
 
