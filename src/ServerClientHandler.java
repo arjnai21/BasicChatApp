@@ -38,6 +38,25 @@ public class ServerClientHandler implements Runnable {
         
     }
 
+    public void broadcast(String msg, boolean excludeCurrentUser) {
+        try {
+            System.out.println("Broadcasting -- " + msg);
+            synchronized (clientList) {
+                for (ClientConnectionData c : clientList){
+                    if(excludeCurrentUser && c == client) {
+                        continue;
+                    }
+                    c.getOut().println(msg);
+                    // c.getOut().flush();
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("broadcast caught exception: " + ex);
+            ex.printStackTrace();
+        }
+
+    }
+
     private boolean nameInClientList(final String name){
         boolean containsName = false;
         for (ClientConnectionData data : clientList) {
@@ -80,7 +99,7 @@ public class ServerClientHandler implements Runnable {
                     String chat = incoming.substring(4).trim();
                     if (chat.length() > 0) {
                         String msg = String.format("CHAT %s %s", client.getUserName(), chat);
-                        broadcast(msg);    
+                        broadcast(msg, true);
                     }
                 } else if (incoming.startsWith("QUIT")){
                     break;
