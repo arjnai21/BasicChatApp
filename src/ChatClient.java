@@ -28,7 +28,7 @@ public class ChatClient {
         System.out.print("Chat sessions has started - enter a user name: ");
         String name = userInput.nextLine().trim();
         out.println(name); //out.flush();
-        while (!socketIn.readLine().startsWith("WELCOME")) {
+        while (socketIn.readLine().trim().equals("SUBMITNAME")) {
             System.out.print("Name already taken. Enter a different user name: ");
             name = userInput.nextLine().trim();
             out.println(name); //out.flush();
