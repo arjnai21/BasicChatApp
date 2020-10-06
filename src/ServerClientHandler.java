@@ -41,6 +41,40 @@ public class ServerClientHandler implements Runnable {
 
     }
 
+    public void broadcastAndExcludeUser(String msg) {
+        try {
+            System.out.println("Broadcasting -- " + msg);
+            synchronized (clientList) {
+                for (ClientConnectionData c : clientList){
+                    if(c == client){
+                        continue;
+                    }
+                    c.getOut().println(msg);
+                    // c.getOut().flush();
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("broadcast caught exception: " + ex);
+            ex.printStackTrace();
+        }
+
+    }
+
+    //recipient guaranteed to be in room
+    public void sendPChat(String msg, String recipient){
+        try {
+            System.out.println("Broadcasting -- " + msg);
+
+            synchronized (clientMap) {
+                clientMap.get(recipient).getOut().println(msg);
+
+            }
+        } catch (Exception ex) {
+            System.out.println("broadcast caught exception: " + ex);
+            ex.printStackTrace();
+        }
+    }
+
     private boolean userNameInClientList(final String userName){
         return clientMap.containsKey(userName);
     }
@@ -79,9 +113,22 @@ public class ServerClientHandler implements Runnable {
                     String chat = incoming.substring(4).trim();
                     if (chat.length() > 0) {
                         String msg = String.format("CHAT %s %s", client.getUserName(), chat);
-                        broadcast(msg, true);
+                        broadcastAndExcludeUser(msg);
                     }
-                } else if (incoming.startsWith("QUIT")){
+                }
+                else if (incoming.startsWith("PCHAT")) {
+                    String[] message = incoming.split(" ");
+                    String recipient = message[1];
+                    if(!userNameInClientList(userName)){
+                        client.getOut().println("Username \"" + recipient + "\" does not exist.");
+                    }
+                    String chat = incoming.substring(5 + 1 + recipient.length()).trim();
+                    if (chat.length() > 0) {
+                        String msg = String.format("PCHAT %s %s %s", client.getUserName(), recipient, chat);
+                        sendPChat(msg, recipient);
+                    }
+                }
+                else if (incoming.startsWith("QUIT")){
                     break;
                 }
             }

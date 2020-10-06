@@ -19,6 +19,10 @@ public class ClientServerHandler implements Runnable {
                 while( (incoming = socketIn.readLine()) != null) {
                     //handle different headers
                     //WELCOME
+                    if(incoming.startsWith("WELCOME")){
+                        String username = incoming.substring(7).trim();
+                        System.out.println(username + "has joined.");
+                    }
                     //CHAT
                     //EXIT
                     System.out.println(incoming);

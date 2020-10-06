@@ -11,7 +11,7 @@ public class ChatClient {
     
     public static void main(String[] args) throws Exception {
         Scanner userInput = new Scanner(System.in);
-        
+
         System.out.println("What's the server IP? ");
         String serverip = userInput.nextLine();
         System.out.println("What's the server port? ");
@@ -41,7 +41,7 @@ public class ChatClient {
 
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
-            String msg = String.format("CHAT %s", line); 
+            String msg = String.format("CHAT %s", line);
             out.println(msg);
             line = userInput.nextLine().trim();
         }
