@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import java.io.PrintWriter;
 public class ChatServer {
     public static final int PORT = 54321;
     private static final ArrayList<ClientConnectionData> clientList = new ArrayList<>();
+    private static final HashMap<String, ClientConnectionData> clientMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(100);
@@ -42,7 +44,7 @@ public class ChatServer {
                     // System.out.println("added client " + name);
 
                     //handle client business in another thread
-                    pool.execute(new ServerClientHandler(client, clientList));
+                    pool.execute(new ServerClientHandler(client, clientList, clientMap));
                 } catch (IOException ex) {
                     System.out.println(ex.getMessage());
                 }

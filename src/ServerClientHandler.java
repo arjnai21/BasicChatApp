@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.BufferedReader;
@@ -13,10 +14,12 @@ import java.io.PrintWriter;
 public class ServerClientHandler implements Runnable {
     ClientConnectionData client;
     ArrayList<ClientConnectionData> clientList;
+    HashMap<String, ClientConnectionData> clientMap;
 
-    public ServerClientHandler(ClientConnectionData client, ArrayList<ClientConnectionData> clientList) {
+    public ServerClientHandler(ClientConnectionData client, ArrayList<ClientConnectionData> clientList, HashMap<String, ClientConnectionData> clientMap) {
         this.client = client;
         this.clientList = clientList;
+        this.clientMap = clientMap;
     }
 
     /**
@@ -38,15 +41,8 @@ public class ServerClientHandler implements Runnable {
         
     }
 
-    private boolean nameInClientList(final String name){
-        boolean containsName = false;
-        for (ClientConnectionData data : clientList) {
-            if (data.getUserName().equals(name)) {
-                containsName = true;
-                break;
-            }
-        }
-        return containsName;
+    private boolean userNameInClientList(final String userName){
+        return clientMap.containsKey(userName);
     }
 
     @Override
@@ -60,12 +56,15 @@ public class ServerClientHandler implements Runnable {
             do {
                 out.println("SUBMITNAME");
                 userName = in.readLine().trim();
-            } while (nameInClientList(userName));
+            } while (userNameInClientList(userName));
             System.out.println(userName);
 
             synchronized (clientList) {
                 client.setUserName(userName);
                 clientList.add(client);
+            }
+            synchronized (clientMap) {
+                clientMap.put(userName, client);
             }
             
             System.out.println("added client " + client.getName());
@@ -98,6 +97,9 @@ public class ServerClientHandler implements Runnable {
             //Remove client from clientList, notify all
             synchronized (clientList) {
                 clientList.remove(client); 
+            }
+            synchronized (clientMap) {
+                clientMap.remove(client.getUserName());
             }
             System.out.println(client.getName() + " has left.");
             broadcast(String.format("EXIT %s", client.getUserName()));
