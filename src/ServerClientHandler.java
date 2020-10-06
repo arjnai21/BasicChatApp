@@ -38,7 +38,7 @@ public class ServerClientHandler implements Runnable {
             System.out.println("broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
-        
+
     }
 
     private boolean userNameInClientList(final String userName){
@@ -66,12 +66,12 @@ public class ServerClientHandler implements Runnable {
             synchronized (clientMap) {
                 clientMap.put(userName, client);
             }
-            
+
             System.out.println("added client " + client.getName());
             //notify all that client has joined
             broadcast(String.format("WELCOME %s", client.getUserName()));
 
-            
+
             String incoming = "";
 
             while( (incoming = in.readLine()) != null) {
@@ -79,7 +79,7 @@ public class ServerClientHandler implements Runnable {
                     String chat = incoming.substring(4).trim();
                     if (chat.length() > 0) {
                         String msg = String.format("CHAT %s %s", client.getUserName(), chat);
-                        broadcast(msg);    
+                        broadcast(msg, true);
                     }
                 } else if (incoming.startsWith("QUIT")){
                     break;
@@ -87,7 +87,7 @@ public class ServerClientHandler implements Runnable {
             }
         } catch (Exception ex) {
             if (ex instanceof SocketException) {
-                System.out.println("Caught socket ex for " + 
+                System.out.println("Caught socket ex for " +
                     client.getName());
             } else {
                 System.out.println(ex);
@@ -96,7 +96,7 @@ public class ServerClientHandler implements Runnable {
         } finally {
             //Remove client from clientList, notify all
             synchronized (clientList) {
-                clientList.remove(client); 
+                clientList.remove(client);
             }
             synchronized (clientMap) {
                 clientMap.remove(client.getUserName());
