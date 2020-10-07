@@ -51,7 +51,14 @@ Lizard has left.
 ```
 
 ## Advanced chatting features
+### Private Messaging
 If you want to message exactly one specific person but no one else in the chat room, you can use a private message to do so. Simply prefix your message with `@[THEIR USERNAME] ` and whoever's username you put next to the `@` will be the only person to receive the message. For example, if you were Lizard and typed `@Velociraptor all my homies hate spider`, then whoever is named "Velociraptor" (and only Velociraptor) will get the following:
 ```
 Lizard (private): all my homies hate spider
+```
+### List of Users
+`/users` is a command that will list all of the users currently in the chat room. Anyone who is not connected yet or has already left will not appear on the list. It is especially useful when you want to private message someone but are not sure who your choices are or what their username is. It can also be used to reassure yourself that you have friends to talk to. It can also have the opposite effect.
+```
+/user
+Users: Lizard, Spider, Velociraptor
 ```
