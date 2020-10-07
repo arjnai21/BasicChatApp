@@ -42,7 +42,7 @@ public class ClientServerHandler implements Runnable {
                     //EXIT
                     else if(incoming.startsWith("EXIT")){
                         String name = incoming.substring(4).trim();
-                        System.out.println(name + "has left.");
+                        System.out.println(name + " has left.");
                     }
                     else if(incoming.startsWith("USERS")){
                         String users = incoming.substring(5);
