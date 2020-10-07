@@ -124,7 +124,7 @@ public class ServerClientHandler implements Runnable {
                     }
                     String chat = incoming.substring(5 + 1 + recipient.length()).trim();
                     if (chat.length() > 0) {
-                        String msg = String.format("PCHAT %s %s %s", client.getUserName(), recipient, chat);
+                        String msg = String.format("PCHAT %s %s", client.getUserName(), chat);
                         sendPChat(msg, recipient);
                     }
                 }
@@ -141,6 +141,7 @@ public class ServerClientHandler implements Runnable {
                 ex.printStackTrace();
             }
         } finally {
+            client.getOut().println("LEFT");
             //Remove client from clientList, notify all
             synchronized (clientList) {
                 clientList.remove(client);
@@ -151,8 +152,15 @@ public class ServerClientHandler implements Runnable {
             System.out.println(client.getName() + " has left.");
             broadcast(String.format("EXIT %s", client.getUserName()));
             try {
+                Thread.sleep(2000); // close client socket to make sure it is closed if client has not already done so
+
                 client.getSocket().close();
-            } catch (IOException ex) {}
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+//            try {
+//                //client.getSocket().close();
+//            } catch (IOException ignored) {}
 
         }
     }

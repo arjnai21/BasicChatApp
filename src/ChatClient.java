@@ -41,9 +41,21 @@ public class ChatClient {
 
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
-            String msg = String.format("CHAT %s", line);
-            out.println(msg);
+            if(line.charAt(0) == '@'){
+                //pchat
+                String[] message = line.split(" ");
+                String recipient = message[0].substring(1);
+                String chat = line.substring(message[0].length()).trim();
+                String msg = String.format("PCHAT %s %s", recipient, chat);
+                out.println(msg);
+            }
+            else{
+                String msg = String.format("CHAT %s", line);
+                out.println(msg);
+
+            }
             line = userInput.nextLine().trim();
+
         }
         out.println("QUIT");
         out.close();
