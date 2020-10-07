@@ -49,6 +49,9 @@ public class ChatClient {
                 String msg = String.format("PCHAT %s %s", recipient, chat);
                 out.println(msg);
             }
+            else if(line.equals("/users")){
+                out.println("USERS");
+            }
             else{
                 String msg = String.format("CHAT %s", line);
                 out.println(msg);

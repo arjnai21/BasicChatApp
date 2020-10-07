@@ -44,6 +44,10 @@ public class ClientServerHandler implements Runnable {
                         String name = incoming.substring(4).trim();
                         System.out.println(name + "has left.");
                     }
+                    else if(incoming.startsWith("USERS")){
+                        String users = incoming.substring(5);
+                        System.out.println(users);
+                    }
                     else if(incoming.equals("LEFT")){
                         socketIn.close(); //should close socket as well
                         break;                    }

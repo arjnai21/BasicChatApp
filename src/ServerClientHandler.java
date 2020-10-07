@@ -128,6 +128,17 @@ public class ServerClientHandler implements Runnable {
                         sendPChat(msg, recipient);
                     }
                 }
+                else if(incoming.equals("USERS")){
+                    StringBuilder msg = new StringBuilder("USERS");
+                    msg.append("Users: ");
+                    for (int i = 0; i < clientList.size()-1; i++) {
+                        msg.append(clientList.get(i).getUserName());
+                        msg.append(", ");
+                    }
+                    msg.append(clientList.get(clientList.size()-1).getUserName());
+                    String sendMsg = msg.toString();
+                    client.getOut().println(sendMsg);
+                }
                 else if (incoming.startsWith("QUIT")){
                     break;
                 }
