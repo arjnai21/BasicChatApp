@@ -71,6 +71,7 @@ public class ChatGuiClient extends Application {
     private TextArea messageArea;
     private TextField textInput;
     private Button sendButton;
+    private Button specialButton;
 
     private Stage userListStage;
     private TextArea nameArea = new TextArea();
@@ -117,9 +118,12 @@ public class ChatGuiClient extends Application {
         sendButton = new Button("Send");
         sendButton.setDisable(true);
         sendButton.setOnAction(e -> sendMessage());
+        specialButton = new Button("Users");
+        specialButton.setDisable(true);
+        specialButton.setOnAction(e -> messageArea.appendText("Users: " + nameArea.getText().substring(0, nameArea.getText().length() - 1).replaceAll("\n", ", ") + "\n"));
 
         HBox hbox = new HBox();
-        hbox.getChildren().addAll(new Label("Message: "), textInput, sendButton);
+        hbox.getChildren().addAll(new Label("Message: "), textInput, sendButton, specialButton);
         HBox.setHgrow(textInput, Priority.ALWAYS);
         borderPane.setBottom(hbox);
 
@@ -282,6 +286,7 @@ public class ChatGuiClient extends Application {
                     stage.setTitle("Chatter - " + username);
                     textInput.setEditable(true);
                     sendButton.setDisable(false);
+                    specialButton.setDisable(false);
                     messageArea.appendText("Welcome to the chatroom, " + username + "!\n");
                 });
                 BorderPane borderPane = new BorderPane();
