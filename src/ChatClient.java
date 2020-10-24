@@ -31,11 +31,27 @@ public class ChatClient {
         }
         System.out.print("Chat session has started - enter a user name: ");
         String name = userInput.nextLine().trim();
+        while (name.equals("") || name.contains(" ")) {
+            if (name.equals("")) {
+                System.out.println("You must enter a nonempty name: ");
+            } else {
+                System.out.println("The name must have no spaces: ");
+            }
+            name = userInput.nextLine().trim();
+        }
         Message msg = new Message("SUBMITNAME", name);
         out.writeObject(msg); //out.flush();
         while (((Message) socketIn.readObject()).getMsgHeader().equals("SUBMITNAME")) {
             System.out.print("Name already taken. Enter a different user name: ");
             name = userInput.nextLine().trim();
+            while (name.equals("") || name.contains(" ")) {
+                if (name.equals("")) {
+                    System.out.println("You must enter a nonempty name: ");
+                } else {
+                    System.out.println("The name must have no spaces: ");
+                }
+                name = userInput.nextLine().trim();
+            }
 //            msg.setMsgBody(name); this doesnt work for some unexplainable reason
             out.writeObject(new Message("SUBMITNAME", name)); //out.flush();
         }
