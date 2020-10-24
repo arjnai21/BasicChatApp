@@ -154,7 +154,25 @@ public class ChatGuiClient extends Application {
             return;
         textInput.clear();
         try {
-            out.writeObject(new Message("CHAT", message));
+            if(message.charAt(0) == '@') {
+                //pchat
+                String[] tokens = message.split(" ");
+                int subStrNum = 0;
+                int index = 0;
+                while (tokens[index].charAt(0) == '@'){
+                    subStrNum += tokens[index].length() + 1;
+                    index++;
+                }
+                String recipients = message.substring(0, subStrNum).trim();
+                String chat = message.substring(subStrNum).trim();
+                if(chat.length() == 0){
+                    System.out.println("You cannot send empty messages");
+                }
+                Message chatMessage = new Message("PCHAT", (subStrNum + Integer.toString(subStrNum).length() + 1) + " " + recipients + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
+                out.writeObject(chatMessage);
+            } else {
+                out.writeObject(new Message("CHAT", message));
+            }
         } catch (Exception ex) {}
         
     }
@@ -331,6 +349,14 @@ public class ChatGuiClient extends Application {
 
                         Platform.runLater(() -> {
                             messageArea.appendText(user + ": " + msg + "\n");
+                        });
+                    } else if(incoming.getMsgHeader().equals("PCHAT")) {
+                        String[] message = incoming.getMsgBody().split(" ");
+                        String username = message[0];
+                        String chat = incoming.getMsgBody().substring(username.length()).trim();
+
+                        Platform.runLater(() -> {
+                            messageArea.appendText(username + " (private): " + chat + "\n");
                         });
                     } else if (incoming.getMsgHeader().equals("EXIT")) { 
                         String user = incoming.getMsgBody();

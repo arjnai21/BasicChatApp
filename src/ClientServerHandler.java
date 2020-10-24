@@ -42,7 +42,6 @@ public class ClientServerHandler implements Runnable {
                         String username = message[0];
                         String chat = incoming.getMsgBody().substring(username.length()).trim();
                         System.out.println(username + " (private): " + chat);
-
                     }
                     //EXIT
                     else if(msgHeader.equals("EXIT")){

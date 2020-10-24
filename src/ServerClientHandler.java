@@ -148,8 +148,7 @@ public class ServerClientHandler implements Runnable {
                                 client.getOut().writeObject(new Message("NOUSER", recipient));
                                 continue readClientMessages;
                             }
-                            chat = client.getUserName() + " " + chat;
-                            sendPChat(new Message("PCHAT", chat), recipient);
+                            sendPChat(new Message("PCHAT", client.getUserName() + " " + chat), recipient);
                         }
 //                        String recipient = msgBody.substring(0, msgBody.indexOf(" "));
 //

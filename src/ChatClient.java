@@ -52,7 +52,6 @@ public class ChatClient {
                 //pchat
                 String[] message = line.split(" ");
                 int subStrNum = 0;
-                int numRecipients = 0;
                 int index = 0;
                 while (message[index].charAt(0) == '@'){
                     subStrNum += message[index].length() + 1;
@@ -63,7 +62,7 @@ public class ChatClient {
                 if(chat.length() == 0){
                     System.out.println("You cannot send empty messages");
                 }
-                Message chatMessage = new Message("PCHAT", (subStrNum) + 1 + " " + recipients + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
+                Message chatMessage = new Message("PCHAT", (subStrNum + Integer.toString(subStrNum).length() + 1) + " " + recipients + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
                 out.writeObject(chatMessage);
             }
             else if(line.equals("/whoishere")){
