@@ -33,9 +33,9 @@ public class ChatClient {
         String name = userInput.nextLine().trim();
         while (name.equals("") || name.contains(" ")) {
             if (name.equals("")) {
-                System.out.println("You must enter a nonempty name: ");
+                System.out.print("You must enter a nonempty name: ");
             } else {
-                System.out.println("The name must have no spaces: ");
+                System.out.print("The name must have no spaces: ");
             }
             name = userInput.nextLine().trim();
         }
@@ -46,9 +46,9 @@ public class ChatClient {
             name = userInput.nextLine().trim();
             while (name.equals("") || name.contains(" ")) {
                 if (name.equals("")) {
-                    System.out.println("You must enter a nonempty name: ");
+                    System.out.print("You must enter a nonempty name: ");
                 } else {
-                    System.out.println("The name must have no spaces: ");
+                    System.out.print("The name must have no spaces: ");
                 }
                 name = userInput.nextLine().trim();
             }
