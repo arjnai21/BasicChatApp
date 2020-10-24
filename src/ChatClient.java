@@ -1,13 +1,12 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.security.MessageDigestSpi;
 import java.util.Scanner;
 
 public class ChatClient {
     private static Socket socket;
-    private static BufferedReader socketIn;
-    private static PrintWriter out;
+    private static ObjectInputStream socketIn;
+    private static ObjectOutputStream out;
     
     public static void main(String[] args) throws Exception {
         Scanner userInput = new Scanner(System.in);
@@ -19,19 +18,26 @@ public class ChatClient {
         userInput.nextLine();
 
         socket = new Socket(serverip, port);
-        socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
+        InputStream stream = socket.getInputStream();
+        socketIn = new ObjectInputStream(socket.getInputStream());
+        out = new ObjectOutputStream(socket.getOutputStream()); // muts create output stream first
+
+
 
         // Submit name to server
-        while (!socketIn.readLine().trim().equals("SUBMITNAME"));
-
-        System.out.print("Chat sessions has started - enter a user name: ");
+        Message inMessage = (Message) socketIn.readObject();
+        while (!(inMessage.getMsgHeader().equals("SUBMITNAME"))){
+            System.out.println(inMessage);
+        }
+        System.out.print("Chat session has started - enter a user name: ");
         String name = userInput.nextLine().trim();
-        out.println(name); //out.flush();
-        while (socketIn.readLine().trim().equals("SUBMITNAME")) {
+        Message msg = new Message("SUBMITNAME", name);
+        out.writeObject(msg); //out.flush();
+        while (((Message) socketIn.readObject()).getMsgHeader().equals("SUBMITNAME")) {
             System.out.print("Name already taken. Enter a different user name: ");
             name = userInput.nextLine().trim();
-            out.println(name); //out.flush();
+            msg.setMsgBody(name);
+            out.writeObject(msg); //out.flush();
         }
 
         // start a thread to listen for server messages
@@ -46,21 +52,20 @@ public class ChatClient {
                 String[] message = line.split(" ");
                 String recipient = message[0].substring(1);
                 String chat = line.substring(message[0].length()).trim();
-                String msg = String.format("PCHAT %s %s", recipient, chat);
-                out.println(msg);
+                Message chatMessage = new Message("PCHAT", recipient + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
+                out.writeObject(chatMessage);
             }
             else if(line.equals("/users")){
-                out.println("USERS");
+                out.writeObject(new Message("USERS", ""));
             }
             else{
-                String msg = String.format("CHAT %s", line);
-                out.println(msg);
+                out.writeObject(new Message("CHAT", line));
 
             }
             line = userInput.nextLine().trim();
 
         }
-        out.println("QUIT");
+        out.writeObject(new Message("QUIT", ""));
         out.close();
         userInput.close();
         socketIn.close();
