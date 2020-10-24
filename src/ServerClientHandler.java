@@ -77,6 +77,9 @@ public class ServerClientHandler implements Runnable {
     }
 
     private String getUsers(){
+        if(clientList.size() != 0){
+            return "";
+        }
         StringBuilder users = new StringBuilder();
         users.append("Users: ");
         for (int i = 0; i < clientList.size() - 1; i++) {

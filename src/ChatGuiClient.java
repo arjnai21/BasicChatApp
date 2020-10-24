@@ -36,20 +36,20 @@ import javafx.stage.Stage;
  *      > javac --module-path %PATH_TO_FX% --add-modules javafx.controls day10_chatgui/ChatGuiClient.java
  *  Windows Powershell:
  *      > javac --module-path $env:PATH_TO_FX --add-modules javafx.controls day10_chatgui/ChatGuiClient.java
- * 
+ *
  * Then, run with:
- * 
+ *
  *  Mac/Linux:
- *      > java --module-path $PATH_TO_FX --add-modules javafx.controls day10_chatgui.ChatGuiClient 
+ *      > java --module-path $PATH_TO_FX --add-modules javafx.controls day10_chatgui.ChatGuiClient
  *  Windows CMD:
  *      > java --module-path %PATH_TO_FX% --add-modules javafx.controls day10_chatgui.ChatGuiClient
  *  Windows Powershell:
  *      > java --module-path $env:PATH_TO_FX --add-modules javafx.controls day10_chatgui.ChatGuiClient
- * 
+ *
  * There are ways to add JavaFX to your to your IDE so the compile and run process is streamlined.
  * That process is a little messy for VSCode; it is easiest to do it via the command line there.
- * However, you should open  Explorer -> Java Projects and add to Referenced Libraries the javafx .jar files 
- * to have the syntax coloring and autocomplete work for JavaFX 
+ * However, you should open  Explorer -> Java Projects and add to Referenced Libraries the javafx .jar files
+ * to have the syntax coloring and autocomplete work for JavaFX
  */
 
 class ServerInfo {
@@ -66,7 +66,7 @@ public class ChatGuiClient extends Application {
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    
+
     private Stage stage;
     private TextArea messageArea;
     private TextField textInput;
@@ -74,7 +74,7 @@ public class ChatGuiClient extends Application {
 
     private ServerInfo serverInfo;
     //volatile keyword makes individual reads/writes of the variable atomic
-    // Since username is accessed from multiple threads, atomicity is important 
+    // Since username is accessed from multiple threads, atomicity is important
     private volatile String username = "";
     public static void main(String[] args) {
         launch(args);
@@ -92,7 +92,7 @@ public class ChatGuiClient extends Application {
             Optional<ServerInfo> info = getServerIpAndPort();
             if (info.isPresent()) {
                 this.serverInfo = info.get();
-            } 
+            }
             else{
                 Platform.exit();
                 return;
@@ -126,7 +126,7 @@ public class ChatGuiClient extends Application {
         stage.show();
 
         ServerListener socketListener = new ServerListener();
-        
+
         //Handle GUI closed event
         stage.setOnCloseRequest(e -> {
             try {
@@ -134,7 +134,7 @@ public class ChatGuiClient extends Application {
             } catch (Exception ex) {}
             socketListener.appRunning = false;
             try {
-                socket.close(); 
+                socket.close();
             } catch (IOException ex) {}
         });
 
@@ -149,7 +149,7 @@ public class ChatGuiClient extends Application {
         try {
             out.writeObject(new Message("CHAT", message));
         } catch (Exception ex) {}
-        
+
     }
 
     private Optional<ServerInfo> getServerIpAndPort() {
@@ -201,7 +201,7 @@ public class ChatGuiClient extends Application {
         });
 
         getServerDialog.getDialogPane().setContent(grid);
-        
+
         // Request focus on the username field by default.
         Platform.runLater(() -> ipAddress.requestFocus());
 
@@ -225,8 +225,8 @@ public class ChatGuiClient extends Application {
             nameDialog.setTitle("Enter Chat Name");
             nameDialog.setHeaderText("Please enter your username.");
             nameDialog.setContentText("Name: ");
-            
-        
+
+
             while(username.equals("")) {
                 Optional<String> name = nameDialog.showAndWait();
                 if (!name.isPresent() || name.get().trim().equals(""))
@@ -256,7 +256,7 @@ public class ChatGuiClient extends Application {
                 socket = new Socket(serverInfo.serverAddress, serverInfo.serverPort);
                 in = new ObjectInputStream(socket.getInputStream());
                 out = new ObjectOutputStream(socket.getOutputStream());
-                
+
                 appRunning = true;
 
                 // String line;
@@ -299,7 +299,7 @@ public class ChatGuiClient extends Application {
                                 messageArea.appendText(user + " has joined the chatroom.\n");
                             });
                         }
-                            
+
                     } else if (incoming.getMsgHeader().equals("CHAT")) {
                         int split = incoming.getMsgBody().indexOf(" ");
                         String user = incoming.getMsgBody().substring(0, split);
@@ -308,7 +308,7 @@ public class ChatGuiClient extends Application {
                         Platform.runLater(() -> {
                             messageArea.appendText(user + ": " + msg + "\n");
                         });
-                    } else if (incoming.getMsgHeader().equals("EXIT")) { 
+                    } else if (incoming.getMsgHeader().equals("EXIT")) {
                         String user = incoming.getMsgBody();
                         Platform.runLater(() -> {
                             messageArea.appendText(user + " has left the chatroom.\n");
@@ -320,7 +320,7 @@ public class ChatGuiClient extends Application {
             } catch (Exception e) {
                 if (appRunning)
                     e.printStackTrace();
-            } 
+            }
             finally {
                 Platform.runLater(() -> {
                     stage.close();
