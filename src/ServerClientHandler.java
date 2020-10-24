@@ -1,3 +1,4 @@
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -6,10 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 
 public class ServerClientHandler implements Runnable {
     ClientConnectionData client;
@@ -25,12 +22,12 @@ public class ServerClientHandler implements Runnable {
     /**
      * Broadcasts a message to all clients connected to the server.
      */
-    public void broadcast(String msg) {
+    public void broadcast(Message msg) {
         try {
             System.out.println("Broadcasting -- " + msg);
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
-                    c.getOut().println(msg);
+                    c.getOut().writeObject(msg);
                     // c.getOut().flush();
                 }
             }
@@ -41,7 +38,7 @@ public class ServerClientHandler implements Runnable {
 
     }
 
-    public void broadcastAndExcludeUser(String msg) {
+    public void broadcastAndExcludeUser(Message msg) {
         try {
             System.out.println("Broadcasting -- " + msg);
             synchronized (clientList) {
@@ -49,7 +46,7 @@ public class ServerClientHandler implements Runnable {
                     if(c == client){
                         continue;
                     }
-                    c.getOut().println(msg);
+                    c.getOut().writeObject(msg);
                     // c.getOut().flush();
                 }
             }
@@ -61,12 +58,12 @@ public class ServerClientHandler implements Runnable {
     }
 
     //recipient guaranteed to be in room
-    public void sendPChat(String msg, String recipient){
+    public void sendPChat(Message msg, String recipient){
         try {
             System.out.println("Broadcasting -- " + msg);
 
             synchronized (clientMap) {
-                clientMap.get(recipient).getOut().println(msg);
+                clientMap.get(recipient).getOut().writeObject(msg);
 
             }
         } catch (Exception ex) {
@@ -82,14 +79,15 @@ public class ServerClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            BufferedReader in = client.getInput();
-            PrintWriter out = client.getOut();
+            ObjectInputStream in = client.getInput();
+            ObjectOutputStream out = client.getOut();
 
             //get userName, first message from user
             String userName;
             do {
-                out.println("SUBMITNAME");
-                userName = in.readLine().trim();
+                Message submitName = new Message("SUBMITNAME", "");
+                out.writeObject(submitName);
+                userName = ((Message) in.readObject()).getMsgBody();
             } while (userNameInClientList(userName));
             System.out.println(userName);
 
@@ -103,44 +101,53 @@ public class ServerClientHandler implements Runnable {
 
             System.out.println("added client " + client.getName());
             //notify all that client has joined
-            broadcast(String.format("WELCOME %s", client.getUserName()));
+//            broadcast(String.format("WELCOME %s", client.getUserName()));
+            broadcast(new Message("WELCOME", client.getUserName()));
 
 
-            String incoming = "";
+            Message incoming;
 
-            while( (incoming = in.readLine()) != null) {
-                if (incoming.startsWith("CHAT")) {
-                    String chat = incoming.substring(4).trim();
-                    if (chat.length() > 0) {
-                        String msg = String.format("CHAT %s %s", client.getUserName(), chat);
-                        broadcastAndExcludeUser(msg);
+            readClientMessages:
+            while( (incoming = (Message) in.readObject()) != null) {
+                String msgHeader = incoming.getMsgHeader();
+                String msgBody = incoming.getMsgBody();
+                switch (msgHeader) {
+                    case "CHAT": {
+                        if (msgBody.length() > 0) {
+//                        String msg = String.format("CHAT %s %s", client.getUserName(), chat);
+                            Message msg = new Message("CHAT", client.getUserName()+ " " + msgBody);
+                            broadcastAndExcludeUser(msg);
+                        }
+                        break;
                     }
-                }
-                else if (incoming.startsWith("PCHAT")) {
-                    String[] message = incoming.split(" ");
-                    String recipient = message[1];
-                    if(!userNameInClientList(userName)){
-                        client.getOut().println("Username \"" + recipient + "\" does not exist.");
+                    case "PCHAT": {
+                        String recipient = msgBody.substring(0, msgBody.indexOf(" "));
+                        if (!userNameInClientList(recipient)) {
+                            client.getOut().writeObject(new Message("NOUSER", recipient));
+                            continue;
+                        }
+                        String chat = msgBody.substring(recipient.length()).trim();
+                        if (chat.length() > 0) {
+//                            String msg = String.format("PCHAT %s %s", client.getUserName(), chat);
+                            Message msg = new Message("PCHAT", client.getUserName() + " " + chat);
+                            sendPChat(msg, recipient);
+
+                        }
+                        break;
                     }
-                    String chat = incoming.substring(5 + 1 + recipient.length()).trim();
-                    if (chat.length() > 0) {
-                        String msg = String.format("PCHAT %s %s", client.getUserName(), chat);
-                        sendPChat(msg, recipient);
-                    }
-                }
-                else if(incoming.equals("USERS")){
-                    StringBuilder msg = new StringBuilder("USERS");
-                    msg.append("Users: ");
-                    for (int i = 0; i < clientList.size()-1; i++) {
-                        msg.append(clientList.get(i).getUserName());
-                        msg.append(", ");
-                    }
-                    msg.append(clientList.get(clientList.size()-1).getUserName());
-                    String sendMsg = msg.toString();
-                    client.getOut().println(sendMsg);
-                }
-                else if (incoming.startsWith("QUIT")){
-                    break;
+                    case "USERS":
+                        StringBuilder users = new StringBuilder();
+                        users.append("Users: ");
+                        for (int i = 0; i < clientList.size() - 1; i++) {
+                            users.append(clientList.get(i).getUserName());
+                            users.append(", ");
+                        }
+                        users.append(clientList.get(clientList.size() - 1).getUserName());
+                        String sendMsg = users.toString();
+                        client.getOut().writeObject(new Message("USERS", sendMsg));
+                        break;
+                    case "QUIT":
+                        break readClientMessages;
                 }
             }
         } catch (Exception ex) {
@@ -152,7 +159,11 @@ public class ServerClientHandler implements Runnable {
                 ex.printStackTrace();
             }
         } finally {
-            client.getOut().println("LEFT");
+            try {
+                client.getOut().writeObject(new Message("LEFT", ""));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             //Remove client from clientList, notify all
             synchronized (clientList) {
                 clientList.remove(client);
@@ -161,8 +172,10 @@ public class ServerClientHandler implements Runnable {
                 clientMap.remove(client.getUserName());
             }
             System.out.println(client.getName() + " has left.");
-            broadcast(String.format("EXIT %s", client.getUserName()));
+//            broadcast(String.format("EXIT %s", client.getUserName()));
+            broadcast(new Message("EXIT", client.getUserName()));
             try {
+
                 Thread.sleep(2000); // close client socket to make sure it is closed if client has not already done so
 
                 client.getSocket().close();
