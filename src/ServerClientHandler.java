@@ -76,6 +76,17 @@ public class ServerClientHandler implements Runnable {
         return clientMap.containsKey(userName);
     }
 
+    private String getUsers(){
+        StringBuilder users = new StringBuilder();
+        users.append("Users: ");
+        for (int i = 0; i < clientList.size() - 1; i++) {
+            users.append(clientList.get(i).getUserName());
+            users.append(", ");
+        }
+        users.append(clientList.get(clientList.size() - 1).getUserName());
+        return users.toString();
+    }
+
     @Override
     public void run() {
         try {
@@ -103,6 +114,7 @@ public class ServerClientHandler implements Runnable {
             //notify all that client has joined
 //            broadcast(String.format("WELCOME %s", client.getUserName()));
             broadcast(new Message("WELCOME", client.getUserName()));
+            broadcast(new Message("USERS", getUsers()));
 
 
             Message incoming;
@@ -135,17 +147,10 @@ public class ServerClientHandler implements Runnable {
                         }
                         break;
                     }
-                    case "USERS":
-                        StringBuilder users = new StringBuilder();
-                        users.append("Users: ");
-                        for (int i = 0; i < clientList.size() - 1; i++) {
-                            users.append(clientList.get(i).getUserName());
-                            users.append(", ");
-                        }
-                        users.append(clientList.get(clientList.size() - 1).getUserName());
-                        String sendMsg = users.toString();
-                        client.getOut().writeObject(new Message("USERS", sendMsg));
-                        break;
+//                    case "USERS":
+//
+//                        client.getOut().writeObject(new Message("USERS", getUsers()));
+//                        break;
                     case "QUIT":
                         break readClientMessages;
                 }
@@ -160,7 +165,7 @@ public class ServerClientHandler implements Runnable {
             }
         } finally {
             try {
-                client.getOut().writeObject(new Message("LEFT", ""));
+                client.getOut().writeObject(new Message("LEFT", ""));;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -174,6 +179,7 @@ public class ServerClientHandler implements Runnable {
             System.out.println(client.getName() + " has left.");
 //            broadcast(String.format("EXIT %s", client.getUserName()));
             broadcast(new Message("EXIT", client.getUserName()));
+            broadcast(new Message("USERS", getUsers()));
             try {
 
                 Thread.sleep(2000); // close client socket to make sure it is closed if client has not already done so
