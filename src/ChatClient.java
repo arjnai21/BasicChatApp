@@ -45,6 +45,7 @@ public class ChatClient {
         Thread t = new Thread(listener);
         t.start();
 
+
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
             if(line.charAt(0) == '@') {

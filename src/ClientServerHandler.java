@@ -19,7 +19,7 @@ public class ClientServerHandler implements Runnable {
         public void run() {
             try {
                 Message incoming;
-
+                boolean printUsers = true;
                 while( (incoming = (Message) socketIn.readObject()) != null) {
                     String msgHeader = incoming.getMsgHeader().trim();
                     String msgBody = incoming.getMsgBody().trim();
@@ -51,6 +51,10 @@ public class ClientServerHandler implements Runnable {
                     }
                     else if(msgHeader.equals("USERS")){
                         users = msgBody;
+                        if(printUsers){
+                            System.out.println(users);
+                            printUsers = false;
+                        }
                     }
                     else if(incoming.getMsgHeader().equals("NOUSER")){
                         String recipient = incoming.getMsgBody();
