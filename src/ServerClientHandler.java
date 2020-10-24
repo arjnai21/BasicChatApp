@@ -98,7 +98,8 @@ public class ServerClientHandler implements Runnable {
             do {
                 Message submitName = new Message("SUBMITNAME", "");
                 out.writeObject(submitName);
-                userName = ((Message) in.readObject()).getMsgBody();
+                Message userMessage = (Message) in.readObject();
+                userName = userMessage.getMsgBody();//((Message) in.readObject()).getMsgBody();
             } while (userNameInClientList(userName));
             System.out.println(userName);
 
@@ -133,18 +134,29 @@ public class ServerClientHandler implements Runnable {
                         break;
                     }
                     case "PCHAT": {
-                        String recipient = msgBody.substring(0, msgBody.indexOf(" "));
-                        if (!userNameInClientList(recipient)) {
-                            client.getOut().writeObject(new Message("NOUSER", recipient));
-                            continue;
+                        ArrayList<String> recipients = new ArrayList<>();
+                        String[] tokenized = msgBody.split(" ");
+                        int chatBeginsAt = Integer.parseInt(tokenized[0]);
+                        String chat = msgBody.substring(chatBeginsAt).trim();
+                        for (int i = 1; i < tokenized.length; i++) {
+                            if(tokenized[i].charAt(0) != '@') break;
+                            String recipient = tokenized[i].substring(1);
+                            if (!userNameInClientList(recipient)) {
+                                client.getOut().writeObject(new Message("NOUSER", recipient));
+                                continue readClientMessages;
+                            }
+                            chat = client.getUserName() + " " + chat;
+                            sendPChat(new Message("PCHAT", chat), recipient);
                         }
-                        String chat = msgBody.substring(recipient.length()).trim();
-                        if (chat.length() > 0) {
-//                            String msg = String.format("PCHAT %s %s", client.getUserName(), chat);
-                            Message msg = new Message("PCHAT", client.getUserName() + " " + chat);
-                            sendPChat(msg, recipient);
-
-                        }
+//                        String recipient = msgBody.substring(0, msgBody.indexOf(" "));
+//
+//                        String chat = msgBody.substring(recipient.length()).trim();
+//                        if (chat.length() > 0) {
+////                            String msg = String.format("PCHAT %s %s", client.getUserName(), chat);
+//                            Message msg = new Message("PCHAT", client.getUserName() + " " + chat);
+//                            sendPChat(msg, recipient);
+//
+//                        }
                         break;
                     }
 //                    case "USERS":
