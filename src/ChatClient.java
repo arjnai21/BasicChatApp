@@ -36,8 +36,8 @@ public class ChatClient {
         while (((Message) socketIn.readObject()).getMsgHeader().equals("SUBMITNAME")) {
             System.out.print("Name already taken. Enter a different user name: ");
             name = userInput.nextLine().trim();
-            msg.setMsgBody(name);
-            out.writeObject(msg); //out.flush();
+//            msg.setMsgBody(name); this doesnt work for some unexplainable reason
+            out.writeObject(new Message("SUBMITNAME", name)); //out.flush();
         }
 
         // start a thread to listen for server messages
@@ -51,9 +51,19 @@ public class ChatClient {
             if(line.charAt(0) == '@') {
                 //pchat
                 String[] message = line.split(" ");
-                String recipient = message[0].substring(1);
-                String chat = line.substring(message[0].length()).trim();
-                Message chatMessage = new Message("PCHAT", recipient + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
+                int subStrNum = 0;
+                int numRecipients = 0;
+                int index = 0;
+                while (message[index].charAt(0) == '@'){
+                    subStrNum += message[index].length() + 1;
+                    index++;
+                }
+                String recipients = line.substring(0, subStrNum).trim();
+                String chat = line.substring(subStrNum).trim();
+                if(chat.length() == 0){
+                    System.out.println("You cannot send empty messages");
+                }
+                Message chatMessage = new Message("PCHAT", (subStrNum) + 1 + " " + recipients + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
                 out.writeObject(chatMessage);
             }
             else if(line.equals("/whoishere")){
