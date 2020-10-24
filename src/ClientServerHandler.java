@@ -8,9 +8,11 @@ import java.util.Scanner;
 
 public class ClientServerHandler implements Runnable {
     ObjectInputStream socketIn;
+    String users;
 
     public ClientServerHandler(ObjectInputStream socketIn) {
         this.socketIn = socketIn;
+        users = "";
     }
 
     @Override
@@ -48,8 +50,7 @@ public class ClientServerHandler implements Runnable {
                         System.out.println(name + " has left.");
                     }
                     else if(msgHeader.equals("USERS")){
-                        String users = incoming.getMsgBody();
-                        System.out.println(users);
+                        users = msgBody;
                     }
                     else if(incoming.getMsgHeader().equals("NOUSER")){
                         String recipient = incoming.getMsgBody();

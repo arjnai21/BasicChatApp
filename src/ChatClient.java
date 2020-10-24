@@ -47,7 +47,7 @@ public class ChatClient {
 
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
-            if(line.charAt(0) == '@'){
+            if(line.charAt(0) == '@') {
                 //pchat
                 String[] message = line.split(" ");
                 String recipient = message[0].substring(1);
@@ -55,8 +55,8 @@ public class ChatClient {
                 Message chatMessage = new Message("PCHAT", recipient + " " + chat);//String.format("PCHAT %s %s", recipient, chat);
                 out.writeObject(chatMessage);
             }
-            else if(line.equals("/users")){
-                out.writeObject(new Message("USERS", ""));
+            else if(line.equals("/whoishere")){
+                System.out.println(listener.users);
             }
             else{
                 out.writeObject(new Message("CHAT", line));
